@@ -1,909 +1,283 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大額支出記錄</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-  :root {
-    --primary: #1a1a2e;
-    --accent: #4f8ef7;
-    --accent2: #e85d75;
-    --bg: #f5f6fa;
-    --card: #ffffff;
-    --text: #1a1a2e;
-    --muted: #7a7a9a;
-    --border: #e0e3f0;
-    --success: #22c77a;
-    --tag-bg: #eef2ff;
-    --tag-text: #3355cc;
-    --shadow: 0 2px 12px rgba(79,142,247,0.08);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 3rem;
-  }
+// 貼到 Apps Script 裡，執行 importHistoricalData() 即可匯入全部歷史資料
 
-  /* Header */
-  .header {
-    background: var(--primary);
-    color: #fff;
-    padding: 1.25rem 1.5rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.02em; }
-  .header-sub { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 2px; }
+function importHistoricalData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('支出記錄');
+  if (!sheet) sheet = initSheet(ss);
 
-  /* Tabs */
-  .tabs {
-    display: flex;
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-  }
-  .tab {
-    flex: 1;
-    min-width: 80px;
-    padding: 0.85rem 0.5rem;
-    text-align: center;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2.5px solid transparent;
-    white-space: nowrap;
-    transition: all 0.18s;
-  }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  const historicalData = [
+    [2023,1,'國泰世華',13252,''],
+    [2023,1,'中國信託',3158,''],
+    [2023,1,'台北富邦',34245,''],
+    [2023,1,'台新銀行',1307,''],
+    [2023,1,'元大信貸',10947,''],
+    [2023,1,'新莊房租',12000,''],
+    [2023,2,'國泰世華',10289,''],
+    [2023,2,'中國信託',3158,''],
+    [2023,2,'台北富邦',35388,''],
+    [2023,2,'台新銀行',1307,''],
+    [2023,2,'元大信貸',10947,''],
+    [2023,2,'新莊房租',12000,''],
+    [2023,2,'五月天',7040,''],
+    [2023,2,'ETF',6902,''],
+    [2023,3,'國泰世華',8880,''],
+    [2023,3,'中國信託',3158,''],
+    [2023,3,'台北富邦',40536,''],
+    [2023,3,'台新銀行',1307,''],
+    [2023,3,'元大信貸',10966,''],
+    [2023,3,'新莊房租',12000,''],
+    [2023,4,'國泰世華',9441,''],
+    [2023,4,'中國信託',3158,''],
+    [2023,4,'台北富邦',28847,''],
+    [2023,4,'台新銀行',1388,''],
+    [2023,4,'元大信貸',10966,''],
+    [2023,4,'新莊房租',12000,''],
+    [2023,5,'國泰世華',6982,''],
+    [2023,5,'中國信託',3158,''],
+    [2023,5,'台北富邦',17550,''],
+    [2023,5,'台新銀行',18836,''],
+    [2023,5,'元大信貸',10966,''],
+    [2023,5,'新莊房租',12000,''],
+    [2023,6,'國泰世華',3838,''],
+    [2023,6,'中國信託',3158,''],
+    [2023,6,'台北富邦',23941,''],
+    [2023,6,'台新銀行',13891,''],
+    [2023,6,'元大信貸',10982,''],
+    [2023,6,'新莊房租',12000,''],
+    [2023,7,'國泰世華',592,''],
+    [2023,7,'中國信託',3158,''],
+    [2023,7,'台北富邦',14932,''],
+    [2023,7,'台新銀行',17203,''],
+    [2023,7,'元大信貸',10982,''],
+    [2023,7,'新莊房租',12000,''],
+    [2023,7,'日本機票',9681,''],
+    [2023,8,'國泰世華',4863,''],
+    [2023,8,'中國信託',3158,''],
+    [2023,8,'台北富邦',25502,''],
+    [2023,8,'台新銀行',13550,''],
+    [2023,8,'聯邦銀行',11415,''],
+    [2023,8,'元大信貸',10982,''],
+    [2023,8,'新莊房租',10000,''],
+    [2023,9,'國泰世華',1582,''],
+    [2023,9,'台北富邦',34483,''],
+    [2023,9,'台新銀行',7471,''],
+    [2023,9,'聯邦銀行',12664,''],
+    [2023,9,'元大信貸',10982,''],
+    [2023,9,'新莊房租',10000,''],
+    [2023,10,'國泰世華',342,''],
+    [2023,10,'台北富邦',16435,''],
+    [2023,10,'台新銀行',13289,''],
+    [2023,10,'聯邦銀行',4215,''],
+    [2023,10,'元大信貸',10982,''],
+    [2023,10,'新莊房租',12000,''],
+    [2023,11,'國泰世華',1605,''],
+    [2023,11,'台北富邦',10442,''],
+    [2023,11,'台新銀行',22359,''],
+    [2023,11,'聯邦銀行',12892,''],
+    [2023,11,'元大信貸',10982,''],
+    [2023,11,'新莊房租',12000,''],
+    [2023,11,'演唱會sj+五月天',16420,''],
+    [2023,12,'國泰世華',599,''],
+    [2023,12,'台北富邦',12000,''],
+    [2023,12,'台新銀行',17882,''],
+    [2023,12,'聯邦銀行',8785,''],
+    [2023,12,'元大信貸',10982,''],
+    [2023,12,'新莊房租',12000,''],
+    [2024,1,'國泰世華',62,''],
+    [2024,1,'台北富邦',11694,''],
+    [2024,1,'台新銀行',21218,''],
+    [2024,1,'聯邦銀行',6990,''],
+    [2024,1,'元大信貸',10982,''],
+    [2024,1,'新莊房租',12000,''],
+    [2024,2,'國泰世華',107,''],
+    [2024,2,'台北富邦',9954,''],
+    [2024,2,'台新銀行',18732,''],
+    [2024,2,'聯邦銀行',10752,''],
+    [2024,2,'元大信貸',10982,''],
+    [2024,2,'新莊房租',12000,''],
+    [2024,2,'五月天',4580,''],
+    [2024,3,'國泰世華',90,''],
+    [2024,3,'台北富邦',16427,''],
+    [2024,3,'台新銀行',37174,''],
+    [2024,3,'聯邦銀行',12588,''],
+    [2024,3,'元大信貸',10982,''],
+    [2024,3,'新莊房租',12000,''],
+    [2024,4,'國泰世華',40,''],
+    [2024,4,'台北富邦',7121,''],
+    [2024,4,'台新銀行',24968,''],
+    [2024,4,'聯邦銀行',11757,''],
+    [2024,4,'元大信貸',10982,''],
+    [2024,4,'新莊房租',12000,''],
+    [2024,5,'國泰世華',1008,''],
+    [2024,5,'台北富邦',9044,''],
+    [2024,5,'台新銀行',14872,''],
+    [2024,5,'聯邦銀行',15887,''],
+    [2024,5,'元大信貸',10982,''],
+    [2024,5,'新莊房租',12000,''],
+    [2024,6,'國泰世華',8455,''],
+    [2024,6,'台北富邦',5986,''],
+    [2024,6,'台新銀行',17858,''],
+    [2024,6,'聯邦銀行',1580,''],
+    [2024,6,'元大信貸',10993,''],
+    [2024,6,'新莊房租',12000,''],
+    [2024,7,'國泰世華',1012,''],
+    [2024,7,'台北富邦',8096,''],
+    [2024,7,'台新銀行',19979,''],
+    [2024,7,'聯邦銀行',7328,''],
+    [2024,7,'元大信貸',10993,''],
+    [2024,7,'新莊房租',12000,''],
+    [2024,7,'定期定額',3900,''],
+    [2024,8,'台北富邦',6057,''],
+    [2024,8,'台新銀行',25240,''],
+    [2024,8,'聯邦銀行',3778,''],
+    [2024,8,'元大信貸',10993,''],
+    [2024,8,'新莊房租',12000,''],
+    [2024,8,'定期定額',3500,''],
+    [2024,9,'台北富邦',7982,''],
+    [2024,9,'台新銀行',12113,''],
+    [2024,9,'聯邦銀行',6395,''],
+    [2024,9,'元大信貸',10993,''],
+    [2024,9,'新莊房租',12000,''],
+    [2024,10,'國泰世華',305,''],
+    [2024,10,'台北富邦',9765,''],
+    [2024,10,'台新銀行',32942,''],
+    [2024,10,'聯邦銀行',8478,''],
+    [2024,10,'元大信貸',10993,''],
+    [2024,10,'新莊房租',12000,''],
+    [2024,11,'國泰世華',8960,''],
+    [2024,11,'台北富邦',7473,''],
+    [2024,11,'台新銀行',24182,''],
+    [2024,11,'元大信貸',10993,''],
+    [2024,11,'新莊房租',12000,''],
+    [2024,12,'國泰世華',3997,''],
+    [2024,12,'台北富邦',29502,''],
+    [2024,12,'台新銀行',44180,''],
+    [2024,12,'聯邦銀行',1565,''],
+    [2024,12,'元大信貸',10993,''],
+    [2024,12,'新莊房租',12000,''],
+    [2024,12,'永豐daway',12504,'原名：永豐大戶'],
+    [2025,1,'國泰世華',14794,''],
+    [2025,1,'台北富邦',8662,''],
+    [2025,1,'台新銀行',18513,''],
+    [2025,1,'聯邦銀行',155,''],
+    [2025,1,'永豐daway',20388,''],
+    [2025,1,'元大信貸',10993,''],
+    [2025,1,'新莊房租',12000,''],
+    [2025,1,'定期定額',3500,''],
+    [2025,2,'國泰世華',19200,''],
+    [2025,2,'台北富邦',33694,''],
+    [2025,2,'台新銀行',14067,''],
+    [2025,2,'永豐daway',34334,''],
+    [2025,2,'元大信貸',10993,''],
+    [2025,2,'新莊房租',12000,''],
+    [2025,2,'定期定額',3500,''],
+    [2025,3,'台北富邦',6154,''],
+    [2025,3,'台新銀行',3377,''],
+    [2025,3,'永豐daway',32865,''],
+    [2025,3,'元大信貸',10993,''],
+    [2025,3,'新莊房租',12000,''],
+    [2025,3,'定期定額',3500,''],
+    [2025,4,'台北富邦',9948,''],
+    [2025,4,'台新銀行',45111,''],
+    [2025,4,'永豐daway',31846,''],
+    [2025,4,'元大信貸',10993,''],
+    [2025,4,'新莊房租',12000,''],
+    [2025,4,'定期定額',3500,''],
+    [2025,5,'國泰世華',35,''],
+    [2025,5,'台北富邦',10594,''],
+    [2025,5,'台新銀行',9989,''],
+    [2025,5,'永豐daway',13635,''],
+    [2025,5,'元大信貸',10993,''],
+    [2025,5,'新莊房租',12000,''],
+    [2025,5,'定期定額',3500,''],
+    [2025,5,'五月天',20000,''],
+    [2025,6,'國泰世華',1866,''],
+    [2025,6,'台北富邦',5792,''],
+    [2025,6,'台新銀行',5337,''],
+    [2025,6,'永豐daway',22706,''],
+    [2025,6,'元大信貸',10993,''],
+    [2025,6,'新莊房租',12000,''],
+    [2025,6,'定期定額',3500,''],
+    [2025,7,'台北富邦',6392,''],
+    [2025,7,'台新銀行',24325,''],
+    [2025,7,'永豐daway',27034,''],
+    [2025,7,'元大信貸',10993,''],
+    [2025,7,'新莊房租',12000,''],
+    [2025,7,'定期定額',4300,''],
+    [2025,8,'國泰世華',1921,''],
+    [2025,8,'台北富邦',5892,''],
+    [2025,8,'台新銀行',12638,''],
+    [2025,8,'永豐daway',33643,''],
+    [2025,8,'玉山銀行',4225,''],
+    [2025,8,'元大信貸',10993,''],
+    [2025,8,'新莊房租',12000,''],
+    [2025,8,'定期定額',3500,''],
+    [2025,9,'國泰世華',2151,''],
+    [2025,9,'台北富邦',26545,''],
+    [2025,9,'台新銀行',9947,''],
+    [2025,9,'永豐daway',50570,''],
+    [2025,9,'元大信貸',10993,''],
+    [2025,9,'新莊房租',12000,''],
+    [2025,9,'定期定額',3500,''],
+    [2025,10,'國泰世華',8103,''],
+    [2025,10,'台北富邦',7464,''],
+    [2025,10,'台新銀行',20902,''],
+    [2025,10,'永豐daway',23634,''],
+    [2025,10,'元大信貸',10993,''],
+    [2025,10,'新莊房租',12000,''],
+    [2025,10,'定期定額',3500,''],
+    [2025,11,'國泰世華',2340,''],
+    [2025,11,'台北富邦',5338,''],
+    [2025,11,'台新銀行',23121,''],
+    [2025,11,'永豐daway',126583,''],
+    [2025,11,'元大信貸',10993,''],
+    [2025,11,'新莊房租',12000,''],
+    [2025,11,'定期定額',3500,''],
+    [2025,12,'國泰世華',49587,''],
+    [2025,12,'台北富邦',4804,''],
+    [2025,12,'台新銀行',8937,''],
+    [2025,12,'永豐daway',31707,''],
+    [2025,12,'匯豐',36310,'原名：HSBC'],
+    [2025,12,'新莊房租',12000,''],
+    [2025,12,'定期定額',3500,''],
+    [2026,1,'國泰世華',6798,''],
+    [2026,1,'台北富邦',5838,''],
+    [2026,1,'台新銀行',13918,''],
+    [2026,1,'匯豐',44048,''],
+    [2026,1,'新莊房租',12000,''],
+    [2026,1,'定期定額',3500,''],
+    [2026,2,'台北富邦',5838,''],
+    [2026,2,'台新銀行',3908,''],
+    [2026,2,'匯豐',104207,''],
+    [2026,2,'新莊房租',12000,''],
+    [2026,2,'定期定額',3500,''],
+    [2026,3,'國泰世華',36498,''],
+    [2026,3,'台北富邦',5838,''],
+    [2026,3,'台新銀行',19271,''],
+    [2026,3,'永豐daway',3520,''],
+    [2026,3,'匯豐',93141,''],
+    [2026,3,'新莊房租',12000,''],
+    [2026,3,'定期定額',4500,''],
+    [2026,4,'國泰世華',11602,''],
+    [2026,4,'台北富邦',5838,''],
+    [2026,4,'台新銀行',4001,''],
+    [2026,4,'匯豐',65782,''],
+    [2026,4,'新莊房租',12000,''],
+    [2026,4,'定期定額',4500,''],
+  ];
 
-  /* Container */
-  .container { max-width: 860px; margin: 0 auto; padding: 1.25rem 1rem; }
-
-  /* Section */
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* Card */
-  .card {
-    background: var(--card);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    padding: 1.25rem 1.25rem 1rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-  }
-  .card-title {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 1rem;
-  }
-
-  /* Summary cards grid */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: var(--shadow);
-  }
-  .stat-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
-  .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.1; }
-  .stat-value.accent { color: var(--accent); }
-  .stat-value.accent2 { color: var(--accent2); }
-  .stat-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
-
-  /* Chart */
-  .chart-wrap { position: relative; width: 100%; height: 220px; }
-
-  /* Form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  .form-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
-  .form-control {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.6rem 0.75rem;
-    font-size: 0.9rem;
-    color: var(--text);
-    background: var(--bg);
-    outline: none;
-    transition: border-color 0.15s;
-    font-family: inherit;
-  }
-  .form-control:focus { border-color: var(--accent); background: #fff; }
-  select.form-control { cursor: pointer; }
-
-  .btn {
-    border: none;
-    border-radius: 8px;
-    padding: 0.7rem 1.2rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    width: 100%;
-    margin-top: 0.25rem;
-    letter-spacing: 0.02em;
-  }
-  .btn-primary:hover { background: #3a7be0; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-sm {
-    padding: 0.3rem 0.75rem;
-    font-size: 0.78rem;
-    border-radius: 6px;
-  }
-  .btn-danger { background: #fff0f3; color: var(--accent2); border: 1px solid #fcc; }
-  .btn-danger:hover { background: #ffe0e6; }
-  .btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: var(--border); }
-
-  /* Category tags */
-  .cat-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-  .cat-tag {
-    background: var(--tag-bg);
-    color: var(--tag-text);
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .cat-tag-del {
-    cursor: pointer;
-    color: var(--accent2);
-    font-weight: 700;
-    font-size: 0.9rem;
-    line-height: 1;
-    opacity: 0.7;
-  }
-  .cat-tag-del:hover { opacity: 1; }
-
-  /* List / Table */
-  .record-list { display: flex; flex-direction: column; gap: 0; }
-  .record-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .record-item:last-child { border-bottom: none; }
-  .record-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
-  .record-info { flex: 1; min-width: 0; }
-  .record-cat { font-size: 0.85rem; font-weight: 600; }
-  .record-meta { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
-  .record-amt { font-size: 0.95rem; font-weight: 700; color: var(--accent2); flex-shrink: 0; }
-
-  /* Year selector */
-  .year-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  .year-btn {
-    border: 1px solid var(--border);
-    background: var(--card);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--muted);
-    transition: all 0.15s;
-  }
-  .year-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  /* Monthly table */
-  .month-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-  }
-  .month-table th {
-    text-align: left;
-    padding: 6px 8px;
-    color: var(--muted);
-    font-weight: 600;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.75rem;
-  }
-  .month-table td {
-    padding: 7px 8px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  .month-table tr:last-child td { border-bottom: none; }
-  .month-table .total-row td {
-    font-weight: 700;
-    color: var(--accent);
-    background: #f0f4ff;
-    border-top: 1.5px solid var(--accent);
-    border-bottom: none;
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--primary);
-    color: #fff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* Loading */
-  .loading-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    color: var(--muted);
-    font-size: 0.85rem;
-    gap: 0.5rem;
-  }
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Empty */
-  .empty-msg {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.85rem;
-    padding: 2rem 0;
-  }
-
-  /* Inline add-category */
-  .add-cat-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-top: 0.75rem;
-  }
-  .add-cat-row input {
-    flex: 1;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
-    font-family: inherit;
-    background: var(--bg);
-    outline: none;
-    color: var(--text);
-  }
-  .add-cat-row input:focus { border-color: var(--accent); background: #fff; }
-
-  /* Comparison chart legend */
-  .legend-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-  @media (max-width: 480px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .summary-grid { grid-template-columns: 1fr 1fr; }
-    .stat-value { font-size: 1.2rem; }
-    .month-table { font-size: 0.75rem; }
-  }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div>
-    <div class="header h1" style="font-size:1.05rem;font-weight:600;color:#fff;">大額支出記錄</div>
-    <div class="header-sub" id="header-date"></div>
-  </div>
-  <div id="sync-status" style="font-size:0.72rem;color:rgba(255,255,255,0.5);"></div>
-</div>
-
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('dashboard')">總覽</div>
-  <div class="tab" onclick="switchTab('add')">新增</div>
-  <div class="tab" onclick="switchTab('records')">記錄</div>
-  <div class="tab" onclick="switchTab('settings')">設定</div>
-</div>
-
-<div class="container">
-
-  <!-- DASHBOARD -->
-  <div class="section active" id="sec-dashboard">
-    <div class="year-row" id="year-btns"></div>
-    <div class="summary-grid">
-      <div class="stat-card">
-        <div class="stat-label">本年累計支出</div>
-        <div class="stat-value accent2" id="stat-annual">—</div>
-        <div class="stat-sub" id="stat-annual-sub"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">本月支出</div>
-        <div class="stat-value accent" id="stat-monthly">—</div>
-        <div class="stat-sub" id="stat-monthly-sub"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">月支出趨勢</div>
-      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
-      <div class="legend-row" id="trend-legend"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">各類別佔比</div>
-      <div class="chart-wrap" style="height:180px;"><canvas id="pieChart"></canvas></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">本年度月份明細</div>
-      <div style="overflow-x:auto;">
-        <table class="month-table" id="month-table">
-          <thead><tr id="month-table-head"></tr></thead>
-          <tbody id="month-table-body"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADD -->
-  <div class="section" id="sec-add">
-    <div class="card">
-      <div class="card-title">新增支出記錄</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">年份</label>
-          <select class="form-control" id="inp-year"></select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">月份</label>
-          <select class="form-control" id="inp-month">
-            <option value="1">1 月</option><option value="2">2 月</option>
-            <option value="3">3 月</option><option value="4">4 月</option>
-            <option value="5">5 月</option><option value="6">6 月</option>
-            <option value="7">7 月</option><option value="8">8 月</option>
-            <option value="9">9 月</option><option value="10">10 月</option>
-            <option value="11">11 月</option><option value="12">12 月</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">類別</label>
-          <select class="form-control" id="inp-cat"></select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">金額（元）</label>
-          <input type="number" class="form-control" id="inp-amt" placeholder="0" min="0" step="1">
-        </div>
-        <div class="form-group full">
-          <label class="form-label">備註（選填）</label>
-          <input type="text" class="form-control" id="inp-note" placeholder="例：帳單週期 3/1~3/31">
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="submitRecord()" style="margin-top:1rem;" id="submit-btn">儲存記錄</button>
-    </div>
-  </div>
-
-  <!-- RECORDS -->
-  <div class="section" id="sec-records">
-    <div class="card" style="margin-bottom:0.75rem;">
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
-        <select class="form-control" id="filter-year" style="flex:1;min-width:90px;" onchange="renderRecords()">
-          <option value="">全部年份</option>
-        </select>
-        <select class="form-control" id="filter-month" style="flex:1;min-width:90px;" onchange="renderRecords()">
-          <option value="">全部月份</option>
-          <option value="1">1 月</option><option value="2">2 月</option>
-          <option value="3">3 月</option><option value="4">4 月</option>
-          <option value="5">5 月</option><option value="6">6 月</option>
-          <option value="7">7 月</option><option value="8">8 月</option>
-          <option value="9">9 月</option><option value="10">10 月</option>
-          <option value="11">11 月</option><option value="12">12 月</option>
-        </select>
-        <select class="form-control" id="filter-cat" style="flex:1;min-width:100px;" onchange="renderRecords()">
-          <option value="">全部類別</option>
-        </select>
-      </div>
-    </div>
-    <div class="card" id="records-card">
-      <div class="record-list" id="record-list"></div>
-    </div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div class="section" id="sec-settings">
-    <div class="card">
-      <div class="card-title">類別管理</div>
-      <div class="cat-tags" id="cat-tags-list"></div>
-      <div class="add-cat-row">
-        <input type="text" id="new-cat-input" placeholder="新增類別名稱" maxlength="20">
-        <button class="btn btn-ghost btn-sm" onclick="addCategory()">新增</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">資料同步設定</div>
-      <div class="form-group" style="margin-bottom:0.75rem;">
-        <label class="form-label">Google Apps Script 網址</label>
-        <input type="text" class="form-control" id="gas-url" placeholder="貼上你的 Apps Script 部署網址">
-      </div>
-      <button class="btn btn-primary btn-sm" style="width:auto;padding:0.6rem 1.2rem;" onclick="saveGasUrl()">儲存網址</button>
-      <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--muted);line-height:1.6;">
-        設定後，所有新增的記錄會自動同步至 Google Sheets。<br>
-        首次使用請先在 Google Sheets 建立試算表並部署 Apps Script。
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">本機資料</div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">匯出 CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="clearData()">清除全部資料</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ─── State ────────────────────────────────────────────────────────────────────
-const DEFAULT_CATS = ['國泰世華','中國信託','台北富邦','台新銀行','聯邦銀行','永豐daway','匯豐','新莊房租','定期定額'];
-let state = {
-  records: [],
-  categories: [...DEFAULT_CATS],
-  gasUrl: '',
-  activeYear: new Date().getFullYear()
-};
-let barChartInst = null, pieChartInst = null;
-
-// ─── Persist ──────────────────────────────────────────────────────────────────
-function save() { localStorage.setItem('expense_v1', JSON.stringify(state)); }
-function load() {
-  const raw = localStorage.getItem('expense_v1');
-  if (raw) {
-    try { const d = JSON.parse(raw); Object.assign(state, d); } catch(e) {}
-  }
-}
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
-function init() {
-  load();
-  const now = new Date();
-  document.getElementById('header-date').textContent = now.toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric'});
-
-  const curY = now.getFullYear(), curM = now.getMonth() + 1;
-  const ySelect = document.getElementById('inp-year');
-  for (let y = 2023; y <= curY + 1; y++) {
-    const o = document.createElement('option');
-    o.value = y; o.textContent = y + ' 年';
-    if (y === curY) o.selected = true;
-    ySelect.appendChild(o);
-  }
-  document.getElementById('inp-month').value = curM;
-
-  if (state.gasUrl) document.getElementById('gas-url').value = state.gasUrl;
-  state.activeYear = curY;
-
-  renderAll();
-}
-
-function renderAll() {
-  renderYearBtns();
-  renderDashboard();
-  renderRecords();
-  renderCategoryInputs();
-  renderCatTags();
-}
-
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sec-' + tab).classList.add('active');
-  const tabs = ['dashboard','add','records','settings'];
-  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
-  if (tab === 'dashboard') renderDashboard();
-}
-
-// ─── Year Buttons ─────────────────────────────────────────────────────────────
-function getYears() {
-  const ys = new Set(state.records.map(r => r.year));
-  const cur = new Date().getFullYear();
-  ys.add(cur); ys.add(cur - 1);
-  return Array.from(ys).sort((a, b) => a - b);
-}
-function renderYearBtns() {
-  const wrap = document.getElementById('year-btns');
-  wrap.innerHTML = '';
-  getYears().forEach(y => {
-    const b = document.createElement('button');
-    b.className = 'year-btn' + (y === state.activeYear ? ' active' : '');
-    b.textContent = y + ' 年';
-    b.onclick = () => { state.activeYear = y; renderYearBtns(); renderDashboard(); };
-    wrap.appendChild(b);
-  });
-}
-
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-function renderDashboard() {
-  const y = state.activeYear;
-  const now = new Date();
-  const curM = now.getMonth() + 1;
-  const yearRecs = state.records.filter(r => r.year === y);
-  const annualTotal = yearRecs.reduce((s, r) => s + r.amount, 0);
-  const monthRecs = yearRecs.filter(r => r.month === curM);
-  const monthTotal = monthRecs.reduce((s, r) => s + r.amount, 0);
-
-  document.getElementById('stat-annual').textContent = 'NT$' + annualTotal.toLocaleString();
-  document.getElementById('stat-annual-sub').textContent = '共 ' + yearRecs.length + ' 筆';
-  document.getElementById('stat-monthly').textContent = 'NT$' + monthTotal.toLocaleString();
-  document.getElementById('stat-monthly-sub').textContent = curM + ' 月，共 ' + monthRecs.length + ' 筆';
-
-  renderBarChart(y);
-  renderPieChart(y);
-  renderMonthTable(y);
-}
-
-function getMonthlyTotals(year) {
-  const arr = Array(12).fill(0);
-  state.records.filter(r => r.year === year).forEach(r => { arr[r.month - 1] += r.amount; });
-  return arr;
-}
-
-function renderBarChart(y) {
-  const labels = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  const cur = getMonthlyTotals(y);
-  const prev = getMonthlyTotals(y - 1);
-  const hasPrev = prev.some(v => v > 0);
-
-  const ctx = document.getElementById('barChart').getContext('2d');
-  if (barChartInst) barChartInst.destroy();
-
-  const ds = [{
-    label: y + ' 年',
-    data: cur,
-    backgroundColor: 'rgba(79,142,247,0.75)',
-    borderRadius: 5,
-    borderSkipped: false,
-  }];
-  if (hasPrev) ds.push({
-    label: (y-1) + ' 年',
-    data: prev,
-    backgroundColor: 'rgba(232,93,117,0.35)',
-    borderRadius: 5,
-    borderSkipped: false,
-    type: 'line',
-    fill: false,
-    borderColor: 'rgba(232,93,117,0.7)',
-    pointRadius: 3,
-    tension: 0.3,
+  historicalData.forEach((row, i) => {
+    const [year, month, category, amount, note] = row;
+    sheet.appendRow([
+      Date.now() + i,
+      year,
+      month,
+      category,
+      amount,
+      note || '',
+      new Date(year, month - 1, 1).toLocaleDateString('zh-TW')
+    ]);
   });
 
-  barChartInst = new Chart(ctx, {
-    type: 'bar',
-    data: { labels, datasets: ds },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: hasPrev, position: 'top', labels: { font: { size: 11 }, boxWidth: 10 } } },
-      scales: {
-        y: { ticks: { callback: v => 'NT$' + (v/1000).toFixed(0) + 'k', font: { size: 10 } }, grid: { color: '#f0f0f0' } },
-        x: { ticks: { font: { size: 10 } }, grid: { display: false } }
-      }
-    }
-  });
-
-  const leg = document.getElementById('trend-legend');
-  leg.innerHTML = hasPrev
-    ? `<div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div>${y} 年長條</div>
-       <div class="legend-item"><div class="legend-dot" style="background:#e85d75"></div>${y-1} 年折線</div>`
-    : '';
+  Browser.msgBox('完成！共匯入 ' + historicalData.length + ' 筆資料');
 }
-
-function renderPieChart(y) {
-  const catTotals = {};
-  state.records.filter(r => r.year === y).forEach(r => {
-    catTotals[r.category] = (catTotals[r.category] || 0) + r.amount;
-  });
-  const entries = Object.entries(catTotals).sort((a,b) => b[1]-a[1]);
-  const COLORS = ['#4f8ef7','#e85d75','#22c77a','#f5a623','#9b59b6','#1abc9c','#e67e22','#3498db','#e74c3c','#95a5a6','#2ecc71','#f39c12'];
-
-  const ctx = document.getElementById('pieChart').getContext('2d');
-  if (pieChartInst) pieChartInst.destroy();
-
-  if (!entries.length) {
-    pieChartInst = null;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    return;
-  }
-
-  pieChartInst = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: entries.map(e => e[0]),
-      datasets: [{ data: entries.map(e => e[1]), backgroundColor: COLORS.slice(0, entries.length), borderWidth: 2, borderColor: '#fff' }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 10, padding: 8 } },
-        tooltip: { callbacks: { label: ctx => ctx.label + ': NT$' + ctx.parsed.toLocaleString() } }
-      }
-    }
-  });
-}
-
-function renderMonthTable(y) {
-  const cats = [...new Set(state.records.filter(r => r.year === y).map(r => r.category))];
-  if (!cats.length) {
-    document.getElementById('month-table-head').innerHTML = '<th>尚無記錄</th>';
-    document.getElementById('month-table-body').innerHTML = '';
-    return;
-  }
-  const head = document.getElementById('month-table-head');
-  head.innerHTML = '<th>月份</th>' + cats.map(c => `<th>${c}</th>`).join('') + '<th>合計</th>';
-
-  const body = document.getElementById('month-table-body');
-  body.innerHTML = '';
-  let colTotals = Array(cats.length).fill(0);
-  let grandTotal = 0;
-
-  for (let m = 1; m <= 12; m++) {
-    const recs = state.records.filter(r => r.year === y && r.month === m);
-    if (!recs.length) continue;
-    const row = document.createElement('tr');
-    let rowTotal = 0;
-    let cells = `<td>${m} 月</td>`;
-    cats.forEach((c, i) => {
-      const amt = recs.filter(r => r.category === c).reduce((s, r) => s + r.amount, 0);
-      colTotals[i] += amt;
-      rowTotal += amt;
-      cells += `<td>${amt ? 'NT$' + amt.toLocaleString() : '—'}</td>`;
-    });
-    grandTotal += rowTotal;
-    cells += `<td style="font-weight:600;">NT$${rowTotal.toLocaleString()}</td>`;
-    row.innerHTML = cells;
-    body.appendChild(row);
-  }
-
-  const totRow = document.createElement('tr');
-  totRow.className = 'total-row';
-  totRow.innerHTML = '<td>全年合計</td>' + colTotals.map(t => `<td>NT$${t.toLocaleString()}</td>`).join('') + `<td>NT$${grandTotal.toLocaleString()}</td>`;
-  body.appendChild(totRow);
-}
-
-// ─── Records ──────────────────────────────────────────────────────────────────
-function renderRecords() {
-  const fy = document.getElementById('filter-year').value;
-  const fm = document.getElementById('filter-month').value;
-  const fc = document.getElementById('filter-cat').value;
-  let recs = [...state.records];
-  if (fy) recs = recs.filter(r => r.year == fy);
-  if (fm) recs = recs.filter(r => r.month == fm);
-  if (fc) recs = recs.filter(r => r.category === fc);
-  recs.sort((a, b) => b.year*100 + b.month - (a.year*100 + a.month) || b.id - a.id);
-
-  const list = document.getElementById('record-list');
-  if (!recs.length) { list.innerHTML = '<div class="empty-msg">沒有符合的記錄</div>'; return; }
-
-  list.innerHTML = recs.map(r => `
-    <div class="record-item">
-      <div class="record-dot"></div>
-      <div class="record-info">
-        <div class="record-cat">${r.category}</div>
-        <div class="record-meta">${r.year} 年 ${r.month} 月${r.note ? ' · ' + r.note : ''}</div>
-      </div>
-      <div class="record-amt">NT$${r.amount.toLocaleString()}</div>
-      <button class="btn btn-danger btn-sm" onclick="deleteRecord(${r.id})">刪除</button>
-    </div>
-  `).join('');
-}
-
-function renderCategoryInputs() {
-  const sel = document.getElementById('inp-cat');
-  const fc = document.getElementById('filter-cat');
-  sel.innerHTML = state.categories.map(c => `<option value="${c}">${c}</option>`).join('');
-  fc.innerHTML = '<option value="">全部類別</option>' + state.categories.map(c => `<option value="${c}">${c}</option>`).join('');
-
-  const ys = getYears();
-  const fy = document.getElementById('filter-year');
-  fy.innerHTML = '<option value="">全部年份</option>' + ys.map(y => `<option value="${y}">${y} 年</option>`).join('');
-}
-
-// ─── Add Record ───────────────────────────────────────────────────────────────
-async function submitRecord() {
-  const year = parseInt(document.getElementById('inp-year').value);
-  const month = parseInt(document.getElementById('inp-month').value);
-  const category = document.getElementById('inp-cat').value;
-  const amount = parseInt(document.getElementById('inp-amt').value);
-  const note = document.getElementById('inp-note').value.trim();
-
-  if (!year || !month || !category || !amount || amount <= 0) {
-    showToast('請填寫完整資料'); return;
-  }
-
-  const id = Date.now();
-  const rec = { id, year, month, category, amount, note };
-  state.records.push(rec);
-  save();
-  renderAll();
-  document.getElementById('inp-amt').value = '';
-  document.getElementById('inp-note').value = '';
-  showToast('已儲存 ✓');
-
-  if (state.gasUrl) {
-    syncToSheet(rec);
-  }
-}
-
-// ─── Delete Record ────────────────────────────────────────────────────────────
-function deleteRecord(id) {
-  if (!confirm('確定刪除這筆記錄？')) return;
-  state.records = state.records.filter(r => r.id !== id);
-  save();
-  renderAll();
-  showToast('已刪除');
-}
-
-// ─── Categories ───────────────────────────────────────────────────────────────
-function renderCatTags() {
-  const wrap = document.getElementById('cat-tags-list');
-  wrap.innerHTML = state.categories.map((c, i) => `
-    <div class="cat-tag">
-      ${c}
-      <span class="cat-tag-del" onclick="removeCategory(${i})">×</span>
-    </div>
-  `).join('');
-}
-
-function addCategory() {
-  const inp = document.getElementById('new-cat-input');
-  const name = inp.value.trim();
-  if (!name) return;
-  if (state.categories.includes(name)) { showToast('類別已存在'); return; }
-  state.categories.push(name);
-  save();
-  inp.value = '';
-  renderCatTags();
-  renderCategoryInputs();
-  showToast('已新增類別：' + name);
-}
-
-function removeCategory(i) {
-  const cat = state.categories[i];
-  if (!confirm(`刪除類別「${cat}」？（已記錄的資料不受影響）`)) return;
-  state.categories.splice(i, 1);
-  save();
-  renderCatTags();
-  renderCategoryInputs();
-}
-
-// ─── Sync ──────────────────────────────────────────────────────────────────────
-async function syncToSheet(rec) {
-  document.getElementById('sync-status').textContent = '同步中…';
-  try {
-    await fetch(state.gasUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rec)
-    });
-    document.getElementById('sync-status').textContent = '✓ 已同步';
-    setTimeout(() => document.getElementById('sync-status').textContent = '', 3000);
-  } catch(e) {
-    document.getElementById('sync-status').textContent = '同步失敗';
-  }
-}
-
-function saveGasUrl() {
-  state.gasUrl = document.getElementById('gas-url').value.trim();
-  save();
-  showToast('已儲存 Apps Script 網址');
-}
-
-// ─── Export ───────────────────────────────────────────────────────────────────
-function exportCSV() {
-  const rows = [['ID','年','月','類別','金額','備註']];
-  state.records.sort((a,b) => a.year*100+a.month - (b.year*100+b.month))
-    .forEach(r => rows.push([r.id, r.year, r.month, r.category, r.amount, r.note]));
-  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = '支出記錄.csv'; a.click();
-}
-
-function clearData() {
-  if (!confirm('確定清除所有記錄？此操作無法復原。')) return;
-  state.records = [];
-  save();
-  renderAll();
-  showToast('已清除');
-}
-
-// ─── Toast ─────────────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-// ─── Enter key on new cat ─────────────────────────────────────────────────────
-document.getElementById('new-cat-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addCategory();
-});
-
-init();
-</script>
-</body>
-</html>
